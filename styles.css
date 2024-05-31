@@ -56,6 +56,7 @@ li{
     margin:0 20px 20px -20px  ;
    display: flex;
    justify-content: space-between;
+   
 }
 li>input{
     margin-right:10px;
@@ -89,16 +90,33 @@ li>input{
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
   }
-  .dropdown-content a {
+  .dropdown-content span {
     font-size: 15px;
     display: block;
     padding: 6px 10px;
     cursor: pointer;
   }
-  .dropdown-content a:hover {
+  .dropdown-content span:hover {
     background-color: #ddd;
 }
+
+.dropDow{
+    display: inline-block;
+    cursor: pointer;
+}
+
+.dropDow.drop-item{
+    font-size: 15px;
+    display: none;
+    padding: 6px 10px;
+    cursor: pointer;
+    z-index: 1;
+}
+.drop-item:hover {
+    background-color: #dfdbdb;
+}
+
+
 .show {
     display:block;
 }
-

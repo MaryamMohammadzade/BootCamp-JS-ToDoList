@@ -1,89 +1,81 @@
 var input= document.querySelector(`input[type="text"]`);
-var all= document.querySelector(".all");
-var pending= document.querySelector(".pending");
-var completed= document.querySelector(".completed");
+var barButtons = document.querySelectorAll(".btn")
 var clearAll= document.querySelector(".clear-all");
 var taskList= document.querySelector("ul");
-var Checkboxes=document.querySelectorAll(`input[type="checkbox"]`);
-var taskArray=[];
-show("all");
+const storeArray = JSON.parse(localStorage.getItem('tasks'))
+var taskArray= storeArray ?? [];
+var isEdited = false;
+var filterFlag=''
+show();
 input.value="";
 
 input.addEventListener("keypress",  function(e){
     if(e.key=='Enter'&& input.value.trim() !== ''){
-        var taskName = e.target.value;
-        taskArray.push({
-          name: taskName,
-          taskStatus: 'pending'
-        }) 
-        show("all");
-        input.value="";
+      var taskName = e.target.value;
+       if(!isEdited){
+        taskArray.push({name: taskName, taskStatus: 'pending' }) 
+       }else{
+        taskArray[editId].name = taskName;
+        isEdited = false;
+       }
+       show(filterFlag);
+       input.value="";
+       localStorage.setItem('tasks', JSON.stringify(taskArray));
     }
 });
 
 function creatLi(myTaskName , id){
-  
-    if(taskArray[id].taskStatus=='completed'){
-      var myTaskStatus = 'checked';
-    }else{
-      var myTaskStatus = '';
-    }
-  
-    taskList.innerHTML +=`
-     <li id="${id}">
-       <div>
-         <input type="checkbox" ${myTaskStatus} onclick="changeStatus(this , ${id})"/>
-         <span class="${myTaskStatus}">${myTaskName}</span>
-       </div>
-       <div class="dropdown">
-         <svg onclick="myFunction()" class="dropbtn" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
-           <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
-         </svg>
-         <div id="myDropdown" class="dropdown-content">
-           <a onclick="editFunction(this , ${id})">Edit</a>
-           <a onclick="deleteFunction(this , ${id})">Delete</a>
-         </div>
-      </div> 
-    </li>`;
+  if(taskArray[id].taskStatus=='completed'){
+    var myTaskStatus = 'checked';
+  }else{
+    var myTaskStatus = '';
+  }
+  taskList.innerHTML +=`
+  <li>
+    <div>
+      <input type="checkbox" ${myTaskStatus} onclick="changeStatus(this , ${id})"/>
+      <span class="${myTaskStatus}">${myTaskName}</span>
+    </div>
+    <div>
+      <div>
+         <button class='drop-item' onclick="deleteFunction(${id})" >Delete</button>
+         <button class='drop-item' onclick="editFunction(${id})" >Edit</button>
+      </div>
+    </div>
+ </li>`;
 };
 
-function editFunction(editThis, id){
-  console.log(editThis.innerHTML)
-  console.log(id)
-
+function editFunction(id ){
+  editId = id;
+  input.focus();
   input.value=taskArray[id].name;
+  isEdited = true;
 };
 
-function deleteFunction(deleteThis, id){
-  console.log(deleteThis)
-  console.log(id)
-
+function deleteFunction( id){
   taskArray.splice(id, 1);
-  show('all');
+  localStorage.setItem('tasks', JSON.stringify(taskArray));
+  show(filterFlag);
 };
 
-function changeStatus(thisInput , id) {
-  console.log(thisInput.nextElementSibling.innerHTML)
-  console.log(id)
+function changeStatus(thisInput , id) {  
+
      if(taskArray[id].taskStatus=='pending'){
       thisInput.nextElementSibling.classList.add("checked");
       taskArray[id].taskStatus='completed'
     } else{
           thisInput.nextElementSibling.classList.remove("checked");
           taskArray[id].taskStatus='pending'
-    }   
-    
+    }  
+    localStorage.setItem('tasks', JSON.stringify(taskArray)); 
   };
 
-
-function show(filter){
+function show(filter='all'){
+  addBlue();
   if(taskArray.length>0){
     taskList.innerHTML =``;
-    Checkboxes= document.querySelectorAll(`input[type="checkbox"]`);
+
     if( filter=='all'){
-      all.classList.add("blue");
-      pending.classList.remove("blue");
-      completed.classList.remove("blue");
       taskArray.forEach( (task , id) => {
           creatLi(task.name, id);
         });
@@ -100,54 +92,22 @@ function show(filter){
     }
 };
 
-all.addEventListener("click",  function(e){
-  all.classList.add("blue");
-  pending.classList.remove("blue");
-  completed.classList.remove("blue");
-  show("all");
-}
-)
-
-pending.addEventListener("click",  function(e){
-    pending.classList.add("blue");
-    all.classList.remove("blue");
-    completed.classList.remove("blue");
-    show("pending");
-  }
-  )
-
-  completed.addEventListener("click",  function(e){
-      completed.classList.add("blue");
-      all.classList.remove("blue");
-      pending.classList.remove("blue");
-      show("completed");
-  }
-  )
-
-  clearAll.addEventListener("click",  function(e){
-      completed.classList.remove("blue");
-      all.classList.add("blue");
-      pending.classList.remove("blue");
+clearAll.addEventListener("click",  function(e){
     taskArray=[];
+    localStorage.setItem('tasks', JSON.stringify(taskArray));
     show("all");
-     
-     }
-  )
+     })
 
-function myFunction() {
-  document.getElementById("myDropdown").classList.toggle("show");
-}
-
-window.onclick = function(event) {
-  if (!event.target.matches('.dropbtn')) {
-    var dropdowns = document.getElementsByClassName("dropdown-content");
-    var i;
-    for (i = 0; i < dropdowns.length; i++) {
-      var openDropdown = dropdowns[i];
-      if (openDropdown.classList.contains('show')) {
-        openDropdown.classList.remove('show');
-      }
-    }
-  }
+function addBlue(){
+  barButtons.forEach(element => {
+    element.addEventListener("click", function() {
+      document.querySelector(".blue").classList.remove("blue");
+      this.classList.add("blue");
+      show(this.innerHTML.toLowerCase());
+      filterFlag=this.innerHTML.toLowerCase();
+    })
+    
+  });
 }
   
+
